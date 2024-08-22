@@ -317,6 +317,8 @@ open class EPUBNavigatorViewController: UIViewController,
 
         viewModel.delegate = self
         viewModel.editingActions.delegate = self
+        
+        view.insetsLayoutMarginsFromSafeArea = !viewModel.scroll
     }
 
     @available(*, unavailable)

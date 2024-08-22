@@ -121,7 +121,7 @@ final class EPUBReflowableSpreadView: EPUBSpreadView {
         if viewModel.scroll {
             topConstraint.constant = 0
             bottomConstraint.constant = 0
-            scrollView.contentInset = UIEdgeInsets(top: notchAreaInsets.top, left: 0, bottom: notchAreaInsets.bottom, right: 0)
+            self.scrollView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0);
 
         } else {
             let contentInset = viewModel.config.contentInset
@@ -140,6 +140,7 @@ final class EPUBReflowableSpreadView: EPUBSpreadView {
         }
     }
 
+    // TODO continuous - might need to do something here.
     override func convertPointToNavigatorSpace(_ point: CGPoint) -> CGPoint {
         var point = point
         if viewModel.scroll {
@@ -286,6 +287,10 @@ final class EPUBReflowableSpreadView: EPUBSpreadView {
             return
         }
 
+        
+        // TODO continuous - Can I delete the true block? I think that the spread view will never need to scroll in continuous mode because the scrolling is
+        // all done in the pagination view.
+        
         // Note: The JS layer does not take into account the scroll view's content inset. So it can't be used to reliably scroll to the top or the bottom of the page in scroll mode.
         if viewModel.scroll, [0, 1].contains(progression) {
             var contentOffset = scrollView.contentOffset

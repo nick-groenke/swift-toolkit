@@ -44,6 +44,14 @@ protocol EPUBSpreadViewDelegate: AnyObject {
 }
 
 class EPUBSpreadView: UIView, Loggable, PageView {
+    
+    // TODO not sure about this.
+    var contHeight: CGFloat = 1000
+    
+    func contentHeight() -> CGFloat {
+        return contHeight
+    }
+    
     weak var delegate: EPUBSpreadViewDelegate?
     let viewModel: EPUBNavigatorViewModel
     let spread: EPUBSpread
@@ -455,6 +463,18 @@ extension EPUBSpreadView: WKNavigationDelegate {
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         trace()
         setNeedsStopActivityIndicator()
+        // TODO is this the right place for this?
+        webView.evaluateJavaScript("document.readyState") { (complete, error) in
+            if complete != nil {
+                self.webView.evaluateJavaScript("document.documentElement.offsetHeight") { (height, error) in
+                    if let h = height as? CGFloat {
+                        self.contHeight = h
+                    } else {
+                        self.log(.error, "Error getting height. JS error = \(String(describing: error)); JS return value = \(String(describing: height))")
+                    }
+                }
+            }
+        }
     }
 
     func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
