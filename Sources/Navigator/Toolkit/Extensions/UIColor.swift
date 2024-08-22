@@ -23,4 +23,13 @@ public extension UIColor {
         let blue = Int(b * 255)
         return "rgba(\(red), \(green), \(blue), \(alpha ?? Double(a)))"
     }
+    
+    static func random() -> UIColor {
+        return UIColor(
+           red:   .random(),
+           green: .random(),
+           blue:  .random(),
+           alpha: 1.0
+        )
+    }
 }
