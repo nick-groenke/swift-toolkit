@@ -114,10 +114,8 @@ class PaginationView: UIView, Loggable, UIScrollViewDelegate {
         scrollView.delegate = self
         scrollView.frame = bounds
         scrollView.autoresizingMask = [.flexibleHeight, .flexibleWidth]
-        scrollView.isPagingEnabled = false
         scrollView.bounces = false
         scrollView.showsHorizontalScrollIndicator = false
-        scrollView.contentSize = CGSize(width: scrollView.frame.size.width, height: 500000)
         addSubview(scrollView)
 
         // Adds an empty view before the scroll view to have a consistent behavior on all iOS
@@ -128,7 +126,6 @@ class PaginationView: UIView, Loggable, UIScrollViewDelegate {
         insertSubview(UIView(frame: .zero), at: 0)
         // Prevents the content from jumping down when the status bar is toggled
         scrollView.contentInsetAdjustmentBehavior = .never
-        insetsLayoutMarginsFromSafeArea = false
     }
 
     @available(*, unavailable)
@@ -137,10 +134,17 @@ class PaginationView: UIView, Loggable, UIScrollViewDelegate {
     }
 
     override public func layoutSubviews() {
-        // TODO continuous - maybe make this an abstract method.
-        // Subclasses override this.
+        // Subviews will implement this.
     }
 
+    internal func yOffsetForIndex(_ index: Int) -> CGFloat {
+        scrollView.contentOffset.y
+    }
+    
+    internal func xOffsetForIndex(_ index: Int) -> CGFloat {
+        scrollView.contentOffset.x
+    }
+    
     /// Reloads the pagination with the given total number of pages and current index.
     ///
     /// - Parameters:
@@ -167,10 +171,6 @@ class PaginationView: UIView, Loggable, UIScrollViewDelegate {
 
     /// Updates the current and pre-loaded views.
     internal func setCurrentIndex(_ index: Int, location: PageLocation? = nil, completion: @escaping () -> Void = {}) {
-//        log(.info, "Set current index to \(index)")
-//        if (index > 1) {
-//            return
-//        }
         guard isEmpty || index != currentIndex else {
             completion()
             return
@@ -205,14 +205,6 @@ class PaginationView: UIView, Loggable, UIScrollViewDelegate {
                 completion()
             }
         }
-    }
-    
-    internal func yOffsetForIndex(_ index: Int) -> CGFloat {
-        scrollView.contentOffset.y
-    }
-    
-    internal func xOffsetForIndex(_ index: Int) -> CGFloat {
-        scrollView.contentOffset.x
     }
 
     private func loadNextPage(completion: @escaping () -> Void) {
@@ -325,6 +317,6 @@ class PaginationView: UIView, Loggable, UIScrollViewDelegate {
     }
 
     internal func scrollToView(at index: Int, location: PageLocation, completion: @escaping () -> Void) {
-        // Subclasses must override.
+        // Subclasses must implement this.
     }
 }
