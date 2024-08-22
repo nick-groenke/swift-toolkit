@@ -544,7 +544,11 @@ open class EPUBNavigatorViewController: UIViewController,
 
     private lazy var paginationView: PaginationView = {
         let hasPositions = !positionsByReadingOrder.isEmpty
-        let view = PaginationView(
+        let view = viewModel.scroll ? VerticalScrollPaginationView(
+            frame: .zero,
+            preloadPreviousPositionCount: hasPositions ? config.preloadPreviousPositionCount : 0,
+            preloadNextPositionCount: hasPositions ? config.preloadNextPositionCount : 0
+        ) : HorizontalPaginationView(
             frame: .zero,
             preloadPreviousPositionCount: hasPositions ? config.preloadPreviousPositionCount : 0,
             preloadNextPositionCount: hasPositions ? config.preloadNextPositionCount : 0
