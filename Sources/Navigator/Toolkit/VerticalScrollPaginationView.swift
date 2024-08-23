@@ -22,6 +22,7 @@ final class VerticalScrollPaginationView: PaginationView {
     }
 
     override public func layoutSubviews() {
+        log(.error, "LAYOUT SUBVIEWS")
         guard !loadedViews.isEmpty else {
             scrollView.contentSize = bounds.size
             return
@@ -29,6 +30,11 @@ final class VerticalScrollPaginationView: PaginationView {
         
         let width = scrollView.frame.size.width
 
+//        for (index, view) in loadedViews {
+//            view.frame = CGRect(origin: CGPoint(x: 0, y: yOffsetForIndex(index)), size: CGSize(width: width, height: view.contentHeight()))
+//            view.backgroundColor = .random()
+//        }
+        
         var verticalOffset = 0
         for view in orderedViews {
             view.frame = CGRect(origin: CGPoint(x: 0, y: verticalOffset), size: CGSize(width: width, height: view.contentHeight()))
@@ -43,6 +49,7 @@ final class VerticalScrollPaginationView: PaginationView {
 
     /// Updates the current and pre-loaded views.
     internal override func setCurrentIndex(_ index: Int, location: PageLocation? = nil, completion: @escaping () -> Void = {}) {
+//        log(.info, "Set current index = \(index); location = \(String(describing: location))")
         guard isEmpty || index != currentIndex else {
             completion()
             return
@@ -88,7 +95,94 @@ final class VerticalScrollPaginationView: PaginationView {
     ///   - location: The location to move the future current page view to.
     /// - Returns: Whether the move is possible.
     override func goToIndex(_ index: Int, location: PageLocation, animated: Bool = false, completion: @escaping () -> Void) -> Bool {
-        fatalError("not implemented")
+        log(.info, "Go to index \(index); location = \(location)")
+        // TODO continuous - not sure what this does or whether I need it.
+        guard 0 ..< pageCount ~= index else {
+            log(.info, "returning false")
+            return false
+        }
+        scrollToView(at: index, location: location, completion: completion)
+        return true
+    }
+    
+    internal func scrollToView(at index: Int, location: PageLocation, completion: @escaping () -> Void) {
+        // TODO continuous - what about deferring the move to the location if the view isn't loaded fully??
+        // i.e. This from spread view's 'go' method
+//        guard spreadLoaded else {
+//            // Delays moving to the location until the document is loaded.
+//            pendingLocation = location
+//            return
+//        }
+        
+        guard loadedViews[index] != nil else {
+            print("TODO")
+            return
+        }
+        
+        let progression = switch location {
+            case let .locator(locator): locator.locations.progression ?? 0
+            case .start: 0.0
+            case .end: 1.0
+        }
+        
+        guard progression >= 0, progression <= 1 else {
+            log(.warning, "Scrolling to invalid progression \(progression)")
+            completion()
+            return
+        }
+        
+        setCurrentIndex(index, location: location, completion: completion)
+        
+        let targetView = loadedViews[index]!
+        let targetViewOrigin = targetView.frame.origin
+        let offsetInView = targetView.frame.height * progression
+        let targetScrollOffset = targetViewOrigin.y + offsetInView
+        
+        let p = CGPoint(
+            x: targetViewOrigin.x,
+            y: targetScrollOffset
+        )
+
+        log(.info, "Scroll to \(p)")
+        scrollView.contentOffset = p
+        
+        
+        
+        
+        // Possibly the code needs to be the same regardless of whether currentIndex == index?
+        // Horizontal version uses this guard, which makes sense since
+//        guard currentIndex != index else {
+//            if let view = currentView {
+////                view.go(to: location, completion: completion)
+//                
+//                switch location {
+//                case let .locator(locator):
+//                    // 1. Find the offset for the spread view within this scroll view.
+//                    // 2. Add the offset for the progression WITHIN the spread view.
+//                    fatalError("not implemented")
+//                case .start:
+//                    // Scroll to view's offset
+//                    fatalError("not implemented")
+//                case .end:
+//                    // Scroll to view's offset + view total height - one screen's worth.
+//                    fatalError("not implemented")
+//                }
+//            } else {
+//                completion()
+//            }
+//            return
+//        }
+
+        // Possibly this will work?
+        
+
+//        scrollView.scrollRectToVisible(CGRect(
+//            origin: CGPoint(
+//                x: xOffsetForIndex(index),
+//                y: yOffsetForIndex(index)
+//            ),
+//            size: scrollView.frame.size
+//        ), animated: false)
     }
 }
 
@@ -118,6 +212,7 @@ extension VerticalScrollPaginationView: UIScrollViewDelegate {
         if currentIndex != idx {
             log(.info, "scrolled to \(currentOffset) index = \(idx) (old idx was \(currentIndex))")
         }
+        // TODO continuous - Do I really need to call this constantly as I scroll?
         setCurrentIndex(idx)
     }
 }
