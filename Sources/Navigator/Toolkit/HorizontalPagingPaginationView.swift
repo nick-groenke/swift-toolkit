@@ -45,7 +45,7 @@ protocol PaginationViewDelegate: AnyObject {
     func paginationView(_ paginationView: PaginationView, positionCountAtIndex index: Int) -> Int
 }
 
-final class PaginationView: UIView, Loggable {
+final class HorizontalPagingPaginationView: UIView, PaginationView, Loggable {
     weak var delegate: PaginationViewDelegate?
 
     /// Total number of page views to be paginated.
@@ -329,7 +329,7 @@ final class PaginationView: UIView, Loggable {
     }
 }
 
-extension PaginationView: UIScrollViewDelegate {
+extension HorizontalPagingPaginationView: UIScrollViewDelegate {
     /// We disable the scroll once the user releases the drag to prevent scrolling through more than 1 resource at a
     /// time. Otherwise, because the pagination view's scroll view would have the focus during the scroll gesture, the
     /// scrollable content of the resources would be skipped.

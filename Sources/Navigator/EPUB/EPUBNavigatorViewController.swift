@@ -507,7 +507,7 @@ open class EPUBNavigatorViewController: UIViewController,
     private var paginationView: PaginationView!
 
     private func makePaginationView(hasPositions: Bool) -> PaginationView {
-        let view = PaginationView(
+        let view = HorizontalPagingPaginationView(
             frame: .zero,
             preloadPreviousPositionCount: hasPositions ? config.preloadPreviousPositionCount : 0,
             preloadNextPositionCount: hasPositions ? config.preloadNextPositionCount : 0
