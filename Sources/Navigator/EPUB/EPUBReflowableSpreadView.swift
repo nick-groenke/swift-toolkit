@@ -336,15 +336,27 @@ final class EPUBReflowableSpreadView: EPUBSpreadView {
         }
     }
     
+    func getParentBoundsOffset() -> CGPoint {
+        
+        guard let superview else {
+            return .zero
+        }
+        
+        return superview.bounds.origin - self.frame.origin
+    }
+    
     func updateProgression() async {
         if let contentScrollSize = await getContentScrollSize() {
-            let contentOffset = viewModel.scroll ? scrollView.contentOffset.y : scrollView.contentOffset.x
-            
-            let newProgression = min(max(contentOffset / contentScrollSize, 0.0), 1.0)
             if previousProgression == nil {
                 previousProgression = progression
             }
-            progression = newProgression
+            
+            let totalOffset = scrollView.contentOffset + getParentBoundsOffset()
+            
+            let offsetInScrollDimension = (viewModel.scroll ? totalOffset.y : totalOffset.x)
+            let newProgression = offsetInScrollDimension / contentScrollSize
+
+            progression = min(max(newProgression, 0.0), 1.0)
         }
     }
     
