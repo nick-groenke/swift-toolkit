@@ -137,7 +137,7 @@ final class EPUBReflowableSpreadView: EPUBSpreadView {
 
     // MARK: - Location and progression
 
-    override func progression<T>(in href: T) -> Double where T: URLConvertible {
+    override func progression<T>(in href: T) -> Double where T: URLConvertible {     
         guard
             spread.leading.url().isEquivalentTo(href),
             let progression = progression
@@ -325,41 +325,44 @@ final class EPUBReflowableSpreadView: EPUBSpreadView {
     // To check if a progression change was cancelled or not.
     private var previousProgression: Double?
 
-    // Called by the javascript code to notify that scrolling ended.
-    private func progressionDidChange(_ body: Any) {
-        guard spreadLoaded, let bodyString = body as? String, var newProgression = Double(bodyString) else {
-            return
-        }
-        newProgression = min(max(newProgression, 0.0), 1.0)
-
-        if previousProgression == nil {
-            previousProgression = progression
-        }
-        progression = newProgression
-
-        setNeedsNotifyPagesDidChange()
-    }
-
     private func setNeedsNotifyPagesDidChange() {
         // Makes sure we always receive the "ending scroll" event.
         // ie. https://stackoverflow.com/a/1857162/1474476
         NSObject.cancelPreviousPerformRequests(withTarget: self, selector: #selector(notifyPagesDidChange), object: nil)
         perform(#selector(notifyPagesDidChange), with: nil, afterDelay: 0.3)
     }
-
     @objc private func notifyPagesDidChange() {
-        guard previousProgression != progression else {
-            return
+        Task {
+            await updateProgression()
+            guard previousProgression != progression else {
+                return
+            }
+            previousProgression = nil
+            delegate?.spreadViewPagesDidChange(self)
         }
-        previousProgression = nil
-        delegate?.spreadViewPagesDidChange(self)
     }
-
-    // MARK: - Scripts
-
-    override func registerJSMessages() {
-        super.registerJSMessages()
-        registerJSMessage(named: "progressionChanged") { [weak self] in self?.progressionDidChange($0) }
+    
+    func updateProgression() async {
+        if let contentScrollSize = await getContentScrollSize() {
+            let contentOffset = viewModel.scroll ? scrollView.contentOffset.y : scrollView.contentOffset.x
+            
+            let newProgression = min(max(contentOffset / contentScrollSize, 0.0), 1.0)
+            if previousProgression == nil {
+                previousProgression = progression
+            }
+            progression = newProgression
+            setNeedsNotifyPagesDidChange()
+        }
+    }
+    
+    func getContentScrollSize() async -> CGFloat? {
+        let sizeProperty = viewModel.scroll ? "document.scrollingElement.scrollHeight" : "document.scrollingElement.scrollWidth"
+        do {
+            return try await self.webView.evaluateJavaScript(sizeProperty) as? CGFloat
+        } catch let error {
+            self.log(.error, "Error getting \(sizeProperty): \(String(describing: error))")
+            return nil
+        }
     }
 
     // MARK: - WKNavigationDelegate
