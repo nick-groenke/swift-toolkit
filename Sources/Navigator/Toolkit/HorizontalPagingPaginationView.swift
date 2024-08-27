@@ -7,44 +7,6 @@
 import ReadiumShared
 import UIKit
 
-enum PageLocation: Equatable {
-    case start
-    case end
-    case locator(Locator)
-
-    init(_ locator: Locator?) {
-        self = locator.map { .locator($0) }
-            ?? .start
-    }
-
-    var isStart: Bool {
-        switch self {
-        case .start:
-            return true
-        case let .locator(locator) where locator.locations.progression ?? 0 == 0:
-            return true
-        default:
-            return false
-        }
-    }
-}
-
-protocol PageView {
-    /// Moves the page to the given internal location.
-    func go(to location: PageLocation) async
-}
-
-protocol PaginationViewDelegate: AnyObject {
-    /// Creates the page view for the page at given index.
-    func paginationView(_ paginationView: PaginationView, pageViewAtIndex index: Int) -> (UIView & PageView)?
-
-    /// Called when the page views were updated.
-    func paginationViewDidUpdateViews(_ paginationView: PaginationView)
-
-    /// Returns the number of positions (as in `Publication.positionList`) in the page view at given index.
-    func paginationView(_ paginationView: PaginationView, positionCountAtIndex index: Int) -> Int
-}
-
 final class HorizontalPagingPaginationView: UIView, PaginationView, Loggable {
     weak var delegate: PaginationViewDelegate?
 
