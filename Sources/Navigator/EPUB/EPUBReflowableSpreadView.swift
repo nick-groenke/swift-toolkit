@@ -325,7 +325,7 @@ final class EPUBReflowableSpreadView: EPUBSpreadView {
     // To check if a progression change was cancelled or not.
     private var previousProgression: Double?
 
-    @objc private func notifyPagesDidChange() {
+    @objc override func notifyPagesDidChange() {
         Task {
             await updateProgression()
             guard previousProgression != progression else {
@@ -346,7 +346,7 @@ final class EPUBReflowableSpreadView: EPUBSpreadView {
     }
     
     func updateProgression() async {
-        if let contentScrollSize = await getContentScrollSize() {
+        if let contentScrollSize = await getContentHeight() {
             if previousProgression == nil {
                 previousProgression = progression
             }
@@ -357,16 +357,6 @@ final class EPUBReflowableSpreadView: EPUBSpreadView {
             let newProgression = offsetInScrollDimension / contentScrollSize
 
             progression = min(max(newProgression, 0.0), 1.0)
-        }
-    }
-    
-    func getContentScrollSize() async -> CGFloat? {
-        let sizeProperty = viewModel.scroll ? "document.scrollingElement.scrollHeight" : "document.scrollingElement.scrollWidth"
-        do {
-            return try await self.webView.evaluateJavaScript(sizeProperty) as? CGFloat
-        } catch let error {
-            self.log(.error, "Error getting \(sizeProperty): \(String(describing: error))")
-            return nil
         }
     }
 

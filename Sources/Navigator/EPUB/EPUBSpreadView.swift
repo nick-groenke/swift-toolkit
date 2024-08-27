@@ -44,6 +44,9 @@ protocol EPUBSpreadViewDelegate: AnyObject {
 }
 
 class EPUBSpreadView: UIView, Loggable, PageView {
+
+    private var contentHeight: Double?
+    
     weak var delegate: EPUBSpreadViewDelegate?
     let viewModel: EPUBNavigatorViewModel
     let spread: EPUBSpread
@@ -60,6 +63,7 @@ class EPUBSpreadView: UIView, Loggable, PageView {
     private var activityIndicatorStopWorkItem: DispatchWorkItem?
 
     private(set) var spreadLoaded = false
+    private let spreadLoadedNotifier = Notify()
 
     required init(
         viewModel: EPUBNavigatorViewModel,
@@ -234,6 +238,13 @@ class EPUBSpreadView: UIView, Loggable, PageView {
         applySettings()
         spreadDidLoad()
         delegate?.spreadViewDidLoad(self)
+        Task {
+            await spreadLoadedNotifier.notify()
+        }
+    }
+    
+    func waitForLoaded() async {
+        return await spreadLoadedNotifier.waitForNotification()
     }
 
     /// To be overriden to customize the behavior after the spread is loaded.
@@ -292,6 +303,23 @@ class EPUBSpreadView: UIView, Loggable, PageView {
 
     func go(to location: PageLocation) async {
         fatalError("go(to:) must be implemented in subclasses")
+    }
+    
+    func notifyPagesDidChange() {
+        fatalError("notifyPagesDidChange() must be implemented in subclasses")
+    }
+    
+    func getContentHeight() async -> Double? {
+        if contentHeight == nil {
+            await waitForLoaded()
+            do {
+                try await webView.evaluateJavaScript("document.readyState")
+                contentHeight = try await self.webView.evaluateJavaScript("document.scrollingElement.scrollHeight") as? Double
+            } catch {
+                log(.error, "Failed to get content height from JavaScript: \(error)")
+            }
+        }
+        return contentHeight
     }
 
     enum Direction: CustomStringConvertible {

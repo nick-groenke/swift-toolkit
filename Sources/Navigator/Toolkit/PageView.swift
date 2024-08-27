@@ -9,6 +9,9 @@ import ReadiumShared
 protocol PageView {
     /// Moves the page to the given internal location.
     func go(to location: PageLocation) async
+    func getContentHeight() async -> Double?
+    func notifyPagesDidChange()
+    func waitForLoaded() async
 }
 
 enum PageLocation: Equatable {
