@@ -388,6 +388,36 @@ final class EPUBReflowableSpreadView: EPUBSpreadView {
         // since there's no zooming capabilities. This doesn't prevent JavaScript to handle
         // double-tap manually.
         webView.removeDoubleTapGestureRecognizer()
+        
+        webView.evaluateJavaScript("document.body.scrollHeight") { [weak self] result, error in
+                    guard let self = self else { return }
+                    
+                    if let error = error {
+                        print("Error evaluating JavaScript: \(error)")
+                        return
+                    }
+                    
+                    guard let height = result as? CGFloat else {
+                        print("Could not cast result to CGFloat")
+                        return
+                    }
+                    
+                    // The returned value is in screen points, so it's usually correct
+                    // for iOS coordinate space. Some content might require further scaling
+                    // depending on how you handle viewport meta tags.
+                    self.contentHeight = height
+            
+                    print("Document body height is \(height)")
+            
+            self.webView.frame.size.height = height
+            self.webView.bounds.size.height = height
+            self.frame.size.height = height
+            self.bounds.size.height = height
+
+                    // Notify that the page’s content height is ready.
+                    // This can trigger a table row update, for example:
+                    NotificationCenter.default.post(name: .webViewDidLoad, object: self)
+                }
     }
 
     // MARK: - UIScrollViewDelegate

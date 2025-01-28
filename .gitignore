@@ -5,6 +5,7 @@
 .build/
 .swiftpm/
 ./Package.resolved
+Package.resolved
 
 # Carthage
 ./Carthage/

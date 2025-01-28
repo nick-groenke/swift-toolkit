@@ -44,6 +44,12 @@ protocol EPUBSpreadViewDelegate: AnyObject {
 }
 
 class EPUBSpreadView: UIView, Loggable, PageView {
+    var contentHeight: Double?
+    func getContentHeightNow() -> Double? {
+        return contentHeight
+    }
+    
+    
     weak var delegate: EPUBSpreadViewDelegate?
     let viewModel: EPUBNavigatorViewModel
     let spread: EPUBSpread
@@ -77,7 +83,7 @@ class EPUBSpreadView: UIView, Loggable, PageView {
         isOpaque = false
         backgroundColor = .clear
 
-        webView.frame = bounds
+        webView.frame = CGRect(x: 0, y: 0, width: bounds.width, height: 50)
         webView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         addSubview(webView)
         setupWebView()
@@ -101,8 +107,14 @@ class EPUBSpreadView: UIView, Loggable, PageView {
         NotificationCenter.default.removeObserver(self)
         disableJSMessages()
     }
+    
+    func isLoaded() -> Bool {
+        spreadLoaded
+    }
 
     func setupWebView() {
+        // From ChatGPT - how do you make the web view the size of the content
+        webView.scrollView.isScrollEnabled = false
         scrollView.alpha = 0
 
         webView.backgroundColor = UIColor.clear

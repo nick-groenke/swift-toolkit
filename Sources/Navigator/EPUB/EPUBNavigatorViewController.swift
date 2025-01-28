@@ -759,9 +759,9 @@ open class EPUBNavigatorViewController: UIViewController,
     }
 
     public func clearSelection() {
-        for (_, pageView) in paginationView.loadedViews {
-            (pageView as? EPUBSpreadView)?.webView.clearSelection()
-        }
+//        for (_, pageView) in paginationView.loadedViews {
+//            (pageView as? EPUBSpreadView)?.webView.clearSelection()
+//        }
     }
 
     // MARK: - DecorableNavigator
@@ -1190,6 +1190,10 @@ extension EPUBNavigatorViewController: EditingActionsControllerDelegate {
 }
 
 extension EPUBNavigatorViewController: PaginationViewDelegate {
+    func getNumberOfSpineItems() -> Int{
+        return spreads.count
+    }
+    
     func paginationView(_ paginationView: PaginationView, pageViewAtIndex index: Int) -> (UIView & PageView)? {
         let spread = spreads[index]
         let spreadViewType = (spread.layout == .fixed) ? EPUBFixedSpreadView.self : EPUBReflowableSpreadView.self
