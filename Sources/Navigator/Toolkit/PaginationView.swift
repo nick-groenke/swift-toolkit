@@ -73,7 +73,6 @@ final class PaginationView: UIView, Loggable {
         tableView.isPagingEnabled = false
         tableView.delegate = self
         tableView.dataSource = self
-//        tableView.prefetchDataSource = self
         tableView.backgroundColor = .brown
         
         tableView.register(PageViewTableCell.self, forCellReuseIdentifier: "PageViewTableCell")
@@ -99,17 +98,9 @@ final class PaginationView: UIView, Loggable {
                 return
             }
         
-        print(" reloading row \(index) in tableView")
-            
-//            // Now we can update that row's height
+            print(" reloading row \(index) in tableView")
             let indexPath = IndexPath(row: index, section: 0)
-//            
-//            // Option 1: Reload just this row
             tableView.reloadRows(at: [indexPath], with: .none)
-
-            // Option 2: Use beginUpdates/endUpdates
-//        tableView.beginUpdates()
-//        tableView.endUpdates()
         }
     
     required init?(coder: NSCoder) {
@@ -129,7 +120,6 @@ final class PaginationView: UIView, Loggable {
     
     private func getView(for index: Int) -> (UIView & PageView)? {
         if let existing = loadedViews[index] {
-//            print("return existing view for index \(index)")
             return existing
         }
         
@@ -164,11 +154,8 @@ extension PaginationView: UITableViewDelegate {
         if let pageView = getView(for: indexPath.row),
            pageView.isLoaded(),
            let contentHeight = pageView.getContentHeightNow() {
-//            print("content height for row \(indexPath.row) is \(contentHeight)")
             return contentHeight
         }
-        
-//        print("returning default height 555 for row \(indexPath.row)")
         return 555
     }
 }
@@ -195,15 +182,6 @@ extension PaginationView: UITableViewDataSource {
     
 }
 
-extension PaginationView: UITableViewDataSourcePrefetching {
-    func tableView(_ tableView: UITableView, prefetchRowsAt indexPaths: [IndexPath]) {
-        for indexPath in indexPaths {
-            print("prefetching row \(indexPath.row)")
-            getView(for: indexPath.row)
-        }
-    }
-}
-
 class BufferTableCell: UITableViewCell {
     
 }
@@ -223,7 +201,7 @@ class PageViewTableCell: UITableViewCell {
     }()
     
     
-    var pageView: (UIView & PageView)?
+    var pageView: UIView?
     var usedBefore = false
     var index = -1
     
@@ -244,7 +222,6 @@ class PageViewTableCell: UITableViewCell {
     override func layoutSubviews() {
         super.layoutSubviews()
         contentView.bringSubviewToFront(debugLabel)
-        print("Cell at index \(index) contentView has \(subviews.count) subviews: \(subviews)")
     }
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
